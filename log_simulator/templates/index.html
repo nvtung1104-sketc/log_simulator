@@ -1,0 +1,93 @@
+<!-- templates/index.html -->
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Log Generator Simulator</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark">
+  <div class="container">
+    <header class="header">
+      <h1>Log Generator Simulator</h1>
+      <div class="meta">
+        Thư mục hiện tại: <span id="currentDir">-</span>
+        <label class="theme-switch">Chủ đề tối
+          <input type="checkbox" id="themeToggle" checked>
+        </label>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="form-row">
+        <label>Number of files:
+          <input type="number" id="numFiles" min="1" value="3">
+        </label>
+        <label>Lines per file:
+          <input type="number" id="linesPerFile" min="1" value="3000">
+        </label>
+        <label>Concurrency:
+          <input type="number" id="concurrency" min="1" value="4">
+        </label>
+        <button id="startBtn" class="primary">Start Generate</button>
+        <button id="refreshBtn">Refresh Status</button>
+      </div>
+
+      <div class="form-row">
+        <label>Chọn thư mục:
+          <select id="dirSelect"></select>
+        </label>
+        <button id="setDirBtn">Áp dụng</button>
+        <label>Tìm file:
+          <input type="search" id="searchInput" placeholder="Tên file hoặc phần tên...">
+        </label>
+        <button id="searchBtn">Tìm</button>
+      </div>
+    </section>
+
+    <section class="status-grid">
+      <div class="card status">
+        <h3>Trạng thái</h3>
+        <div><strong>Started:</strong> <span id="startedAt">-</span></div>
+        <div><strong>Ended:</strong> <span id="endedAt">-</span></div>
+        <div><strong>Requested:</strong> <span id="requested">0</span></div>
+        <div><strong>Created:</strong> <span id="created">0</span></div>
+        <div><strong>In progress:</strong> <span id="inprogress">0</span></div>
+      </div>
+
+      <div class="card aggregates">
+        <h3>Aggregates</h3>
+        <div><strong>Files created:</strong> <span id="aggFiles">0</span></div>
+        <div><strong>Total time (ms):</strong> <span id="aggTotal">0</span></div>
+        <div><strong>Avg (ms):</strong> <span id="aggAvg">0</span></div>
+        <div><strong>Min (ms):</strong> <span id="aggMin">0</span></div>
+        <div><strong>Max (ms):</strong> <span id="aggMax">0</span></div>
+      </div>
+    </section>
+
+    <section class="panels">
+      <div class="panel files panel-left card">
+        <h3>Files trong thư mục <small id="dirLabel"></small></h3>
+        <button id="listFilesBtn">List files</button>
+        <ul id="allFiles" class="file-list"></ul>
+      </div>
+
+      <div class="panel recent panel-right card">
+        <h3>Recent files</h3>
+        <ul id="recentList"></ul>
+
+        <h3>Kết quả tìm kiếm</h3>
+        <ul id="searchResults" class="file-list"></ul>
+      </div>
+    </section>
+
+    <section class="viewer card">
+      <h3>Nội dung file</h3>
+      <div id="fileContent" class="file-content">Chọn một file để xem nội dung (tối đa 20k ký tự)</div>
+    </section>
+
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
