@@ -27,7 +27,7 @@ Log Generator Simulator is a lightweight local tool that creates synthetic log f
 ## Directory structure
 Recommended layout:
 
-.
+
 ├─ .venv/                       # optional Python virtual environment (not committed)  
 ├─ generated_logs/              # runtime output (created automatically)  
 │  └─ (log files and subfolders)  
@@ -37,7 +37,6 @@ Recommended layout:
 ├─ templates/                    
 │  └─ index.html                 # single-page UI  
 ├─ app.py                        # Flask backend, APIs, worker  
-├─ README.md                     # this document  
 └─ requirements.txt              # optional pinned deps (Flask)
 
 Notes:
