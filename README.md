@@ -118,6 +118,31 @@ macOS / Linux:
 
 ---
 
+name: Run run.bat (smoke test)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  run-bat-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start run.bat (background), wait and stop
+        shell: powershell
+        run: |
+          # Start run.bat (it creates/uses .venv and starts app)
+          Start-Process -FilePath "$PWD\run.bat" -NoNewWindow
+          Write-Host "Waiting 15s for the app to start..."
+          Start-Sleep -Seconds 15
+          Write-Host "Stopping python processes (cleanup)..."
+          Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          Write-Host "Done"
+
 
 
 
