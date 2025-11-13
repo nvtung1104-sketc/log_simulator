@@ -1,89 +1,41 @@
 # Log Generator Simulator
 
-Lightweight local tool to generate synthetic log files for testing, demos, and load experiments. Provides a small Flask backend and a responsive dark-themed web UI to generate, inspect, search, download and delete generated log files. All file operations are restricted to a configurable output folder (default: `generated_logs`).
+Lightweight local tool that generates synthetic log files. Includes a small Flask backend and a responsive dark-themed web UI to generate, inspect, search, download and delete generated log files. All file operations are restricted to a configurable output folder (default: `generated_logs`).
 
-Status: Stable · Local-only · Minimal dependencies
+---
 
-## Features
-- Bulk generation of timestamped log files with configurable lines-per-file and concurrency.
-- Background generation using a thread pool; web UI polls status in real time.
-- View (bounded preview), download, search (case-insensitive), and delete files.
-- Directory selector limited to `generated_logs` and its subfolders.
-- Dark/light theme and responsive UI.
-- Safe path handling to prevent directory traversal.
+## Application description
+The application creates simulated log files for testing, demos, or load experiments. Features:
+- Bulk generation of files with configurable lines-per-file and concurrency.
+- Real-time progress monitoring and generation statistics (total / average / min / max durations).
+- List, search, preview (bounded), download and delete files within the output directory.
 
-## Quick links
-- Demo (local): http://127.0.0.1:5000
-- Gitpod / Replit / Codespaces: replace `OWNER/REPO` and use:
-  - Gitpod: `https://gitpod.io/#https://github.com/OWNER/REPO`
-  - Replit: `https://replit.com/github/OWNER/REPO`
-  - Codespaces: `https://github.com/codespaces/new?repo=OWNER/REPO`
+## Algorithm (summary)
+- write_one_file(index, lines): create a timestamped file and write sequential lines containing a timestamp and a message.
+- worker_create_files(num, lines, concurrency): use ThreadPoolExecutor to run multiple file-write tasks in parallel.
+- Each task returns its execution time (ms); the backend updates shared status protected by a `threading.Lock`.
+- The frontend polls `/api/status` once per second to update the UI.
 
-## Quickstart (Windows)
-1. Clone repo:
-   ```
-   git clone <repo-url>
-   cd log_simulator
-   ```
-2. Double-click `run.bat` (creates/activates venv, installs deps, starts server)
-   - Or from PowerShell:
-     ```
-     .\.venv\Scripts\Activate.ps1
-     python -m pip install -r requirements.txt
-     python app.py
-     ```
-3. Open http://127.0.0.1:5000
+## User interface (UI)
+- Single-page responsive UI (HTML / CSS / vanilla JS).
+- Dark theme by default with a toggle to switch to light theme.
+- Controls: number of files, lines per file, concurrency, and Start button.
+- Status panel: started / ended timestamps, requested, created and in-progress counters.
+- File list: View (preview up to configured characters), Download, Delete (with confirmation).
+- Search: filename substring search (case-insensitive).
 
-## Quickstart (macOS / Linux)
-1. Clone repo and enter folder:
-   ```
-   git clone <repo-url>
-   cd log_simulator
-   ```
-2. Make launcher executable and run:
-   ```
-   chmod +x run.sh
-   ./run.sh
-   ```
-   - Or manual:
-     ```
-     python3 -m venv .venv
-     source .venv/bin/activate
-     python -m pip install -r requirements.txt
-     python app.py
-     ```
-3. Open http://127.0.0.1:5000
+## README contents
+- Overview
+- Algorithm
+- UI
+- Project layout
+- Installation & running
+- Usage
+- API reference
+- Configuration
+- Security notes & troubleshooting
 
-## One-click runner files
-- `run.bat` — Windows launcher (double-click to run).
-- `run.sh` — macOS / Linux launcher.
-- `.gitpod.yml`, `.replit` — optional cloud IDE auto-run configuration.
-
-## Usage (web UI)
-- Controls: set Number of files, Lines per file, Concurrency → Start Generate.
-- Monitor: started/ended timestamps, created/in-progress counters, aggregates.
-- Directory selector: choose a `generated_logs` subfolder → Apply → List files.
-- Actions per file: View (preview up to 20k chars), Download, Delete (confirm).
-- Search: filename substring (case-insensitive).
-
-## API (high level)
-- GET / — UI
-- POST /api/generate — start generation; JSON: { num_files, lines_per_file, concurrency }
-- GET /api/status — current status and recent files
-- GET /api/list_dirs — allowed view directories
-- POST /api/set_view_dir — set view directory; JSON: { dir }
-- GET /api/list_files — list files in current view directory
-- GET /api/search?q=... — filename substring search
-- GET /api/file_content?filename=... — bounded file content (configurable)
-- POST /api/delete_file — delete file; JSON: { filename }
-- GET /download/<filename> — download file
-
-## Configuration
-- Change `GENERATED_DIR` in `app.py` to modify the output folder.
-- `MAX_FILE_PREVIEW_CHARS` controls preview size (default 20000).
-- `app.py` accepts `--host`, `--port`, and `--debug` CLI flags.
-
-## Project layout
+## Project layout (repository)
 ```
 .
 ├─ .venv/                      # optional venv (do not commit)
@@ -94,48 +46,78 @@ Status: Stable · Local-only · Minimal dependencies
 ├─ templates/
 │  └─ index.html               # single-page UI
 ├─ app.py                      # Flask backend, APIs, worker
-├─ run.bat                     # Windows launcher
+├─ run.bat                     # Windows launcher (double-click)
 ├─ run.sh                      # macOS/Linux launcher
 ├─ README.md                   # this file
 ├─ requirements.txt            # pinned deps
 └─ .gitpod.yml/.replit         # optional: cloud IDE auto-run configs
 ```
 
-## Development notes
-- Shared state is protected by `threading.Lock`.
-- Long-running generation runs in background threads; Flask dev server is for local use only.
-- Use safe path joining (`safe_join_base`) to avoid directory traversal.
+## Installation (local, Windows)
+1. Clone repo:
+   ```
+   git clone <repo-url>
+   cd log_simulator
+   ```
+2. Quick start (Windows): double‑click `run.bat` (creates venv if missing, installs deps, starts server).
+   Or manually (PowerShell):
+   ```
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+   python app.py --host=127.0.0.1 --port=5000
+   ```
+3. Open browser: http://127.0.0.1:5000
 
-## CI & Deployment
-- Example production servers:
-  - Waitress (Windows): `waitress-serve --port=5000 app:app`
-  - Gunicorn (Linux): `gunicorn -w 4 -b 0.0.0.0:5000 app:app`
-- Add a GitHub Actions workflow to run lint/tests before merging.
+macOS / Linux:
+- Make `run.sh` executable: `chmod +x run.sh` then `./run.sh` or do similarly with venv and pip.
 
-## Contributing
-- Use feature branches and open pull requests.
-- Add tests for path-safety and API behavior (use temporary directories).
-- Provide a `CONTRIBUTING.md` for development conventions.
+## Live demo / cloud IDE
+- Gitpod (auto-install & run):  
+  https://gitpod.io/#https://github.com/OWNER/REPO  (replace OWNER/REPO)
+- Replit (import & run):  
+  https://replit.com/github/OWNER/REPO  (replace OWNER/REPO)
+- GitHub Codespaces:  
+  https://github.com/codespaces/new?repo=OWNER/REPO
 
-## Recommended .gitignore
-```
-.venv/
-__pycache__/
-generated_logs/
-*.pyc
-.env
-```
+> Note: replace `OWNER/REPO` with the actual repo path before making public.
 
-## License
-Add a `LICENSE` file (MIT recommended) before publishing.
+## Quick usage
+- Enter: Number of files, Lines per file, Concurrency → Start Generate.
+- Wait for Status to update; recent files will appear.
+- Select a subdirectory from the dropdown → Apply → List files.
+- View/Download/Delete files as needed; use Search to filter names.
+
+## API (summary)
+- GET / — UI
+- POST /api/generate — { num_files, lines_per_file, concurrency }
+- GET /api/status
+- GET /api/list_dirs
+- POST /api/set_view_dir — { dir }
+- GET /api/list_files
+- GET /api/search?q=...
+- GET /api/file_content?filename=...
+- POST /api/delete_file — { filename }
+- GET /download/<filename>
+
+## Configuration
+- `GENERATED_DIR` in `app.py` — base output folder.
+- `MAX_FILE_PREVIEW_CHARS` — preview limit (default 20000).
+- app.py accepts CLI flags: `--host`, `--port`, `--debug`.
+
+## Security & Notes
+- All file operations are confined to `generated_logs/` — prevents path traversal.
+- File deletion is permanent; UI has confirm but backup if needed.
+- Flask dev server is for local/dev use only; use Waitress/Gunicorn for production.
+
+## Quick troubleshooting
+- Module not found: activate venv, `pip install -r requirements.txt`.
+- Port in use: change `--port` when running.
+- Files not showing: check if `view_dir` has been correctly applied to the subdirectory.
 
 ---
 
-Checklist before publishing
-- [ ] Add LICENSE
-- [ ] Pin dependencies in `requirements.txt`
-- [ ] Add `.gitignore`
-- [ ] Add `run.bat` and `run.sh` (already included)
-- [ ] Add screenshot in `assets/` for README header
+
 
 
